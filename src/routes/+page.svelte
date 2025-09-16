@@ -73,6 +73,6 @@ async function login() {
     </div>
     <!-- Right: Background Image -->
     <div class="hidden md:block md:w-1/2 bg-gray-900 relative">
-        <img src="../src/lib/assets/libra.jpg" alt="Library" class="absolute inset-0 w-full h-full object-cover opacity-80" />
+        <img src="/libra.jpg" alt="Library" class="absolute inset-0 w-full h-full object-cover opacity-80" />
     </div>
 </main>
