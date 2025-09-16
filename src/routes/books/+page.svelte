@@ -3,13 +3,34 @@ export const title = 'Books';
 import { onMount } from 'svelte';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-let stats = [
+type Book = {
+  _id: string;
+  title: string;
+  author?: string;
+  isbn?: string;
+  category?: string;
+  totalCopies?: number;
+  availableCopies?: number;
+  lastUser?: string;
+  lastTransactionType?: string;
+  updatedAt?: string;
+};
+
+type Checkout = {
+  _id: string;
+  bookId: Book | string;
+  status: string;
+};
+
+let stats: { label: string; value: number }[] = [
   { label: 'Books', value: 0 },
   { label: 'Checked Out', value: 0 },
   { label: 'Returned', value: 0 }
 ];
-let transactions = [];
-let books = [];
+let transactions: any[] = [];
+let books: Book[] = [];
+let checkouts: Checkout[] = [];
+let returnedCount = 0;
 let showDialog = false;
 let bookTitle = '';
 let author = '';
@@ -20,7 +41,7 @@ let availableCopies = 1;
 let error = '';
 let loading = false;
 
-async function fetchBooks() {
+async function fetchBooks(): Promise<void> {
   loading = true;
   error = '';
   
@@ -41,11 +62,12 @@ async function fetchBooks() {
       } else {
         books = [];
       }
-      
+
       stats[0].value = books.length;
-      
+      stats[1].value = books.reduce((sum, book) => sum + ((book.totalCopies || 0) - (book.availableCopies || 0)), 0);
+
       // Update transactions
-      transactions = books.map(book => ({
+      transactions = books.map((book: Book) => ({
         user: book.lastUser || 'N/A',
         book: book.title || 'Unknown Title',
         type: book.lastTransactionType || 'N/A',
@@ -54,7 +76,7 @@ async function fetchBooks() {
     } else {
       error = `Server error: ${res.status} - ${data.message || 'Unknown error'}`;
     }
-  } catch (e) {
+  } catch (e: any) {
     error = `Network error: ${e.message}`;
     console.error('Fetch error:', e);
   }
@@ -62,9 +84,29 @@ async function fetchBooks() {
   loading = false;
 }
 
-onMount(fetchBooks);
+async function fetchCheckouts(): Promise<void> {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${backendUrl}/api/checkouts`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
+    const data = await res.json();
+    if (res.ok) {
+      checkouts = data;
+      returnedCount = checkouts.filter(co => co.status === 'returned').length;
+      stats[2].value = returnedCount;
+    }
+  } catch (e: any) {
+    // Optionally handle error
+  }
+}
 
-async function addBook(e) {
+onMount(async () => {
+  await fetchBooks();
+  await fetchCheckouts();
+});
+
+async function addBook(e: Event): Promise<void> {
   e.preventDefault();
   loading = true;
   error = '';
@@ -98,7 +140,7 @@ async function addBook(e) {
       totalCopies = availableCopies = 1;
       await fetchBooks();
     }
-  } catch (e) {
+  } catch (e: any) {
     error = `Network error: ${e.message}`;
     console.error('Add book error:', e);
   }
