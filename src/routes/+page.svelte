@@ -34,8 +34,8 @@ async function login() {
     <!-- Left: Login Form -->
     <div class="flex flex-col justify-center items-center w-full md:w-1/2 bg-black text-white px-8">
         <div class="w-full max-w-xs">
-            <h1 class="text-3xl font-bold mb-2">Login to your account</h1>
-            <p class="mb-6 text-gray-300">Enter your email below to login to your account</p>
+            <h1 class="text-3xl font-bold mb-2">Login to the Management Dashboard</h1>
+            <p class="mb-6 text-gray-300">Enter your username and password below to login.</p>
             <form on:submit|preventDefault={login} class="flex flex-col gap-4">
                 <div class="flex flex-col gap-1">
                     <label for="username" class="font-semibold">Username</label>
